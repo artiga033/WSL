@@ -567,6 +567,8 @@ std::pair<GUID, wil::unique_cotaskmem_string> wsl::windows::common::SvcComm::Reg
     _In_ LPCWSTR TargetDirectory,
     _In_ ULONG Flags,
     _In_ std::optional<uint64_t> VhdSize,
+    _In_ LPCWSTR FsType,
+    _In_ LPCWSTR MountOptions,
     _In_opt_ LPCWSTR PackageFamilyName) const
 {
     ClientExecutionContext context;
@@ -592,6 +594,8 @@ std::pair<GUID, wil::unique_cotaskmem_string> wsl::windows::common::SvcComm::Reg
             TargetDirectory,
             Flags,
             VhdSize.value_or(0),
+            FsType,
+            MountOptions,
             PackageFamilyName,
             &installedName,
             context.OutError(),
@@ -607,6 +611,8 @@ std::pair<GUID, wil::unique_cotaskmem_string> wsl::windows::common::SvcComm::Reg
             TargetDirectory,
             Flags,
             VhdSize.value_or(0),
+            FsType,
+            MountOptions,
             PackageFamilyName,
             &installedName,
             context.OutError(),
