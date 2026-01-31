@@ -488,6 +488,18 @@ try
 }
 CATCH_RETURN()
 
+HRESULT STDMETHODCALLTYPE LxssUserSession::SetFsMountOptions(_In_ LPCGUID DistroGuid, _In_ LPCWSTR FsMountOptions, _Out_ LXSS_ERROR_INFO* Error)
+try
+{
+    ServiceExecutionContext context(Error);
+
+    const auto session = m_session.lock();
+    RETURN_HR_IF(RPC_E_DISCONNECTED, !session);
+
+    return session->SetFsMountOptions(DistroGuid, FsMountOptions);
+}
+CATCH_RETURN()
+
 HRESULT STDMETHODCALLTYPE LxssUserSession::ResizeDistribution(_In_ LPCGUID DistroGuid, _In_ HANDLE OutputHandle, _In_ ULONG64 NewSize, _Out_ LXSS_ERROR_INFO* Error)
 try
 {
@@ -1858,6 +1870,30 @@ try
     {
         EMIT_USER_WARNING(wsl::shared::Localization::MessageSparseVhdUnsafe());
     }
+
+    return S_OK;
+}
+CATCH_RETURN()
+
+HRESULT LxssUserSessionImpl::SetFsMountOptions(_In_ LPCGUID DistroGuid, _In_ LPCWSTR FsMountOptions)
+try
+{
+    ExecutionContext context(Context::ConfigureDistro);
+
+    WSL_LOG("SetFsMountOptions", TraceLoggingValue(FsMountOptions, "FsMountOptions"));
+
+    const auto userToken = wsl::windows::common::security::GetUserToken(TokenImpersonation);
+    const wil::unique_hkey lxssKey = s_OpenLxssUserKey(userToken.get());
+    std::lock_guard lock(m_instanceLock);
+
+    // Ensure the distribution exists.
+    auto distribution = DistributionRegistration::Open(lxssKey.get(), *DistroGuid);
+
+    // Write the new mount options.
+    distribution.Write(Property::FsMountOptions, FsMountOptions);
+
+    // Terminate the distribution so the new settings will take effect.
+    _TerminateInstanceInternal(&distribution.Id(), false);
 
     return S_OK;
 }
