@@ -65,6 +65,9 @@ Abstract:
 #include "SocketChannel.h"
 
 #define BSDTAR_PATH "/usr/bin/bsdtar"
+#define BTRFS_CREATE_ARG "create"
+#define BTRFS_PATH "/usr/sbin/btrfs"
+#define BTRFS_SUBVOLUME_ARG "subvolume"
 #define BINFMT_REGISTER_STRING ":" LX_INIT_BINFMT_NAME ":M::MZ::" LX_INIT_PATH ":FP\n"
 #define BINFMT_PATH PROCFS_PATH "/sys/fs/binfmt_misc"
 #define CHRONY_CONF_PATH ETC_PATH "/chrony.conf"
@@ -908,10 +911,12 @@ int FormatDevice(unsigned int Lun, const char* FsType)
 Routine Description:
 
     This routine formats the specified SCSI device with the <FsType> file system.
+
     N.B. The ext4 group size was chosen based on the best practices for Linux VHDs:
          https://docs.microsoft.com/en-us/windows-server/virtualization/hyper-v/best-practices-for-running-linux-on-hyper-v
 
-    N.B. The xfs data section options (-d) is also determined based on the VHD sector size of 1MB, as suggested in the link above.
+    N.B. The xfs data section options (-d) are also determined based on the VHD sector size of 1MB, as suggested in the link above.
+
 Arguments:
 
     Lun - Supplies the LUN number of the SCSI device.
@@ -964,11 +969,19 @@ CATCH_RETURN_ERRNO()
 
 int CreateBtrfsSubvolumeOnDevice(unsigned int Lun, const char* MountOptions)
 /*++
-Routine Description:
+    This routine creates a btrfs subvolume on the specified SCSI device.
+    It is a no-op if there is no subvolume name in the mount options or
+    the subvolume already exists.
 
-    This routine creates a btrfs subvolume on the specified SCSI device. No-op if there is no subvolume name in the mount options
-or the subvolume already exists. Arguments: Lun - Supplies the LUN number of the SCSI device. MountOptions - The mount options to
-use when mounting the device. Subvolume name is extracted from it. Return Value: 0 on success, < 0 on failure.
+Arguments:
+
+    Lun - Supplies the LUN number of the SCSI device.
+    MountOptions - The mount options to use when mounting the device.
+        The subvolume name is extracted from these options.
+
+Return Value:
+
+    0 on success, < 0 on failure.
 --*/
 try
 {
@@ -1023,8 +1036,10 @@ try
         return 0;
     }
 
-    std::string CommandLine = std::format("/usr/sbin/btrfs subvolume create '{}'", SubvolPath);
-    THROW_LAST_ERROR_IF(UtilExecCommandLine(CommandLine.c_str(), nullptr) < 0);
+    THROW_LAST_ERROR_IF(errno != ENOENT);
+
+    const char* Argv[] = {BTRFS_PATH, BTRFS_SUBVOLUME_ARG, BTRFS_CREATE_ARG, SubvolPath.c_str(), nullptr};
+    THROW_LAST_ERROR_IF(UtilCreateProcessAndWait(Argv[0], Argv) < 0);
 
     return 0;
 }
@@ -2857,12 +2872,12 @@ void ProcessImportExportMessage(gsl::span<gsl::byte> Buffer, wsl::shared::Socket
             if (Message->Header.MessageType == LxMiniInitMessageImport)
             {
                 THROW_LAST_ERROR_IF(FormatDevice(Message->DeviceId, FsType) < 0);
-            }
 
-            if (FsType != nullptr && strcmp(FsType, "btrfs") == 0)
-            {
-                // create the subvolume if specified in mount options
-                CreateBtrfsSubvolumeOnDevice(Message->DeviceId, MountOptions);
+                if (FsType != nullptr && strcmp(FsType, "btrfs") == 0)
+                {
+                    // create the subvolume if specified in mount options
+                    THROW_LAST_ERROR_IF(CreateBtrfsSubvolumeOnDevice(Message->DeviceId, MountOptions) < 0);
+                }
             }
 
             THROW_LAST_ERROR_IF(MountDevice(Message->MountDeviceType, Message->DeviceId, DISTRO_PATH, FsType, Message->Flags, MountOptions) < 0);

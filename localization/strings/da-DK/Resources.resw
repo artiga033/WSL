@@ -292,10 +292,12 @@ og "wsl.exe --install &lt;Distro&gt;" for at installere.</value>
     <value>Den ældre distribution understøtter ikke WSL 2.</value>
   </data>
   <data name="MessageEnableVirtualization" xml:space="preserve">
-    <value>WSL2 understøttes ikke med den aktuelle maskinkonfiguration. 
-Aktivér den valgfri komponent "Platform til virtuel maskine", og sørg for, at virtualisering er aktiveret i BIOS.
-Aktivér "Platform til virtuel maskine" ved at køre: wsl.exe --install --no-distribution
-Du kan få flere oplysninger på https://aka.ms/enablevirtualization</value>
+    <value>WSL2 kan ikke starte, da virtualisering ikke er aktiveret på denne maskine.
+Kontrollér, at den valgfri komponent "Virtuel maskinplatform" er aktiveret, og at virtualisering er slået til i computerens firmwareindstillinger.
+
+Aktivér "Virtuel maskinplatform" ved at køre: wsl.exe --install --no-distribution
+
+Se https://aka.ms/enablevirtualization for at få mere at vide</value>
     <comment>{Locked="--install "}{Locked="--no-distribution
 "}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
@@ -466,7 +468,7 @@ Argumenter til administration af Windows-undersystem til Linux:
                 Flyt distributionen til en ny placering.
 
             --set-sparse, -s &lt;true|false&gt;
-                Angiv vhdx for distribution til sparse, hvilket gør det muligt at frigøre diskplads automatisk.
+                Angiv VHD for distribution til sparse, hvilket gør det muligt at frigøre diskplads automatisk.
 
             --set-default-user &lt;Username&gt;
                 Angiv standardbrugeren af distributionen.
@@ -546,11 +548,11 @@ Argumenter for administration af distributioner i Windows-undersystem til Linux:
                 Angiver den version, der skal bruges til den nye distribution.
 
             --vhd
-                Angiver, at den angivne fil er en .vhdx-fil, ikke en tar-fil.
-                Denne handling opretter en kopi af .vhdx-filen på den angivne installationsplacering.
+                Angiver, at den angivne fil er en .vhd- eller.vhdx-fil, ikke en tar-fil.
+                Denne handling opretter en kopi af VHD-filen på den angivne installationsplacering.
 
     --import-in-place &lt;Distro&gt; &lt;FileName&gt;
-        Importerer den angivne .vhdx-fil som en ny distribution.
+        Importerer den angivne VHD-fil som en ny distribution.
         Denne virtuelle harddisk skal være formateret med ext4-filsystemtypen.
 
     --list, -l [Options]
@@ -704,8 +706,13 @@ Systemet skal muligvis genstartes, så ændringerne kan træde i kraft.</value>
      <comment>{Locked="--install "}{Locked="--no-distribution
 "}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
-  <data name="MessageRequiresVhdxFileExtension" xml:space="preserve">
-    <value>Den angivne fil skal have filtypenavnet .vhdx.</value>
+  <data name="MessageRequiresFileExtension" xml:space="preserve">
+    <value>Den angivne fil skal have filtypenavnet {}.</value>
+    <comment>{FixedPlaceholder="{}"}Command line arguments, file names and string inserts should not be translated</comment>
+  </data>
+  <data name="MessageRequiresFileExtensions" xml:space="preserve">
+    <value>Den angivne fil skal have filtypenavnet {} eller {}.</value>
+    <comment>{FixedPlaceholder="{}"}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
   <data name="MessageVmSwitchNotFound" xml:space="preserve">
     <value>VmSwitch "{}" blev ikke fundet. Tilgængelige switches: {}</value>
@@ -715,7 +722,7 @@ Systemet skal muligvis genstartes, så ændringerne kan træde i kraft.</value>
     <value>Sammenknyttet netværk kræver, at wsl2.vmSwitch er angivet.</value>
   </data>
   <data name="MessageCouldFetchDistributionList" xml:space="preserve">
-    <value>Det lykkedes ikke at hente listedistributionen fra '{}'. {}</value>
+    <value>Distributionslisten kunne ikke hentes fra '{}'. {}</value>
     <comment>{FixedPlaceholder="{}"}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
   <data name="MessageFailedToAttachDisk" xml:space="preserve">
@@ -724,9 +731,6 @@ Systemet skal muligvis genstartes, så ændringerne kan træde i kraft.</value>
   </data>
   <data name="MessageFailedToResizeDisk" xml:space="preserve">
     <value>Diskens størrelsen kunne ikke tilpasses.</value>
-  </data>
-  <data name="MessageFailedToTranslatePath" xml:space="preserve">
-    <value>Det mislykkedes at oversætte stien.</value>
   </data>
   <data name="MessageNoValueFound" xml:space="preserve">
     <value>Der blev ikke fundet nogen værdi.</value>
@@ -998,7 +1002,7 @@ Går tilbage til NAT-netværk.</value>
     <value>Se dokumenter</value>
   </data>
   <data name="MessageVhdInUse" xml:space="preserve">
-    <value>Handlingen kunne ikke fuldføres, fordi vhdx er i brug i øjeblikket. Sådan tvinges WSL til at stoppe brug: wsl.exe --shutdown</value>
+    <value>Handlingen kunne ikke fuldføres, fordi VHD'en i øjeblikket er i brug. For at tvinge WSL til at stoppe skal du bruge: wsl.exe --shutdown</value>
     <comment>{Locked="--shutdown"}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
   <data name="MessageInvalidBoolean" xml:space="preserve">
@@ -1006,7 +1010,7 @@ Går tilbage til NAT-netværk.</value>
     <comment>{FixedPlaceholder="{}"}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
   <data name="MessageSparseVhdWsl2Only" xml:space="preserve">
-    <value>Sparse vhdx understøttes kun på WSL2.</value>
+    <value>Sparse VHD understøttes kun på WSL2.</value>
   </data>
   <data name="MessageLocalSystemNotSupported" xml:space="preserve">
     <value>Kørsel af WSL som lokalt system understøttes ikke.</value>
@@ -1051,11 +1055,11 @@ Går tilbage til NAT-netværk.</value>
     <comment>{FixedPlaceholder="{}"}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
   <data name="MessageCorruptedDistroRegistration" xml:space="preserve">
-    <value>Egenskaben '{}' kunne ikke læses fra distributionen {} </value>
+    <value>Det lykkedes ikke at læse egenskaben "{}" fra distributionen {}</value>
     <comment>{FixedPlaceholder="{}"}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
   <data name="MessagePassVhdFlag" xml:space="preserve">
-    <value>Dette ligner en VHDX-fil. Brug --vhd til at importere en VHDX i stedet for en tar.</value>
+    <value>Dette ligner en VHD-fil. Brug --vhd til at importere en VHD i stedet for en tar.</value>
     <comment>{Locked="--vhd "}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
   <data name="MessageDistroStoreInstallFailed" xml:space="preserve">
@@ -1108,7 +1112,7 @@ Fejlkode: {}</value>
   <data name="MessageSparseVhdDisabled" xml:space="preserve">
     <value>Understøttelse af sparse VHD er i øjeblikket deaktiveret på grund af potentiel datakorruption.
 For at tvinge en distribution til at bruge en sparse VHD, skal du køre:
-wsl.exe --manage &lt;DistributionName&gt; --set-sparse --allow-unsafe</value>
+wsl.exe --manage &lt;DistributionName&gt; --set-sparse true --allow-unsafe</value>
     <comment>{Locked="--manage "}{Locked="--set-sparse "}{Locked="--allow-unsafe"}Command line arguments, file names and string inserts should not be translated</comment>
   </data>
   <data name="MessageDrvfsMountFailed" xml:space="preserve">
@@ -1868,5 +1872,34 @@ Du kan også få adgang til flere Fjernindstillinger for VS-kode via kommandopal
   </data>
   <data name="Settings_VMIdleTimeoutTextBox.AutomationProperties.HelpText" xml:space="preserve">
     <value>Det antal millisekunder, en VM er inaktiv, før den lukkes.</value>
+  </data>
+  <data name="Settings_OOBEVSIntegration.Title" xml:space="preserve">
+    <value>Byg, kør, foretag fejlfinding og profilér dine apps, der kører på WSL, fra Visual Studio</value>
+  </data>
+  <data name="Settings_OOBEVSIntegration.Description" xml:space="preserve">
+    <value>Kør og foretag fejlfinding af dine apps på WSL fra Visual Studio</value>
+  </data>
+  <data name="Settings_OOBEVSIntegration_VSForDotNetLink.Content" xml:space="preserve">
+    <value>Få mere at vide om WSL i Visual Studio til .NET-udviklere</value>
+  </data>
+  <data name="Settings_OOBEVSIntegration_VSForDotNetLink.NavigateUri" xml:space="preserve">
+    <value>https://learn.microsoft.com/visualstudio/debugger/debug-dotnet-core-in-wsl-2</value>
+    <comment>{locked}Uri should redirect to the correct locale for the browser</comment>
+  </data>
+  <data name="Settings_OOBEVSIntegration_VSForCppLink.Content" xml:space="preserve">
+    <value>Få mere at vide om Visual Studio og WSL til C++-udviklere</value>
+  </data>
+  <data name="Settings_OOBEVSIntegration_VSForCppLink.NavigateUri" xml:space="preserve">
+    <value>https://learn.microsoft.com/cpp/linux/?view=msvc-170</value>
+    <comment>{locked}Uri should redirect to the correct locale for the browser</comment>
+  </data>
+  <data name="Settings_OOBEVSIntegration_Description.Text" xml:space="preserve">
+    <value>Du kan nemt køre og foretage fejlfinding af dine .NET Core- og C++-apps på tværs af platforme i Linux uden at forlade Visual Studio ved hjælp af WSL (Windows-undersystem til Linux). Hvis du er udvikler på tværs af platforme, kan du bruge denne metode som en enkel måde at teste flere af dine destinationsmiljøer på.</value>
+  </data>
+  <data name="Settings_OOBEVSIntegration_Title.Text" xml:space="preserve">
+    <value>Visual Studio-integration</value>
+  </data>
+  <data name="Settings_Shell_VSIntegration.Content" xml:space="preserve">
+    <value>Visual Studio-integration</value>
   </data>
 </root>
