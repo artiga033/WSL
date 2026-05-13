@@ -1401,10 +1401,8 @@ class UnitTests
         }
     }
 
-    TEST_METHOD(ImportDistroWithFsType)
+    WSL2_TEST_METHOD(ImportDistroWithFsType)
     {
-        WSL2_TEST_ONLY();
-
         //
         // Test importing a distribution with custom filesystem type.
         // Validates ext4, btrfs, and xfs filesystem types.
@@ -1447,10 +1445,8 @@ class UnitTests
         testFsType(L"xfs", L"xfs");
     }
 
-    TEST_METHOD(ImportDistroWithFsMountOptions)
+    WSL2_TEST_METHOD(ImportDistroWithFsMountOptions)
     {
-        WSL2_TEST_ONLY();
-
         //
         // Test importing a distribution with custom filesystem mount options.
         // Covers ext4, btrfs (with subvol), and xfs filesystem types.
@@ -1490,10 +1486,8 @@ class UnitTests
             {L"xfs", L"usrquota", L"grpquota"});
     }
 
-    TEST_METHOD(ManageSetFsMountOptions)
+    WSL2_TEST_METHOD(ManageSetFsMountOptions)
     {
-        WSL2_TEST_ONLY();
-
         //
         // Test the --manage --set-fs-mount-options command across different filesystem types.
         //
